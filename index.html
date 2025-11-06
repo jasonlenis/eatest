@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>EA 单独停神器</title>
+<style>
+  body{font:18px Arial;background:#111;color:#0f0;padding:20px}
+  table{width:100%;border-collapse:collapse}
+  th,td{border:1px solid #0f0;padding:12px;text-align:center}
+  button{padding:8px 16px;margin:3px;background:#0f0;color:#000;border:0}
+  .stop{background:#f00 !important}
+</style>
+</head>
+<body>
+<h1>EA 一人一控中心</h1>
+<div>刷新自动读取最新状态</div>
+<table><thead><tr><th>账户</th><th>姓名</th><th>到期</th><th>操作</th></tr></thead>
+<tbody id="list"></tbody></table>
+
+<script>
+function load(){
+  fetch('users.json?'+Date.now()).then(r=>r.json()).then(users=>{
+    let html='';
+    for(let id in users){
+      let u=users[id];
+      html+=`<tr>
+        <td>${id}</td>
+        <td>${u.name}</td>
+        <td>${u.expire}</td>
+        <td>
+          <button onclick="set('${id}','GO')"   ${u.cmd=='GO'?'class="stop"':''}>开</button>
+          <button onclick="set('${id}','STOP')" ${u.cmd=='STOP'?'class="stop"':''}>停</button>
+        </td>
+      </tr>`;
+    }
+    document.getElementById('list').innerHTML=html;
+  });
+}
+function set(id,cmd){
+  fetch(`api.php?id=${id}&cmd=${cmd}`).then(()=>load());
+}
+load(); setInterval(load,8000);
+</script>
+</body></html>
