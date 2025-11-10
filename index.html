@@ -1,46 +1,36 @@
 <!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>EA 云控中心</title>
-<style>
-  body{font:18px Arial;background:#000;color:#0f0;padding:20px}
-  table{border-collapse:collapse;width:100%}
-  th,td{border:1px solid #0f0;padding:10px;text-align:center}
-  button{padding:8px 16px;margin:5px;background:#0f0;color:#000;border:0;cursor:pointer}
-  .stop{background:#f00}
-</style>
-</head>
-<body>
+<html><head><meta charset="utf-8"><title>EA 云控中心</title>
+<style>body{font:18px Arial;background:#111;color:#0f0;padding:20px;text-align:center}
+table{width:100%;border-collapse:collapse;margin:20px 0}
+th,td{border:1px solid #0f0;padding:12px}
+button{padding:10px 20px;margin:5px;background:#0f0;color:#000;border:0;cursor:pointer}
+.stop{background:#f00}
+</style></head><body>
 <h1>EA 云控中心（自动刷新）</h1>
-<table><thead><tr><th>账户号</th><th>状态</th><th>操作</th></tr></thead><tbody id="list"></tbody></table>
+<table><thead><tr><th>账户ID</th><th>最后上线</th><th>状态</th><th>操作</th></tr></thead>
+<tbody id="list"></tbody></table>
 
 <script>
 function load(){
-  fetch('users.txt?t='+Date.now()).then(r=>r.text()).then(text=>{
-    let lines = text.trim().split('\n');
-    let html = '';
-    lines.forEach(line=>{
-      if(line.trim()==='') return;
-      let [acc, status] = line.split('|');
-      html += `<tr>
-        <td>${acc}</td>
-        <td>${status}</td>
+  fetch('users.txt?t='+Date.now()).then(r=>r.text()).then(t=>{
+    let html='', lines=t.trim().split('\n');
+    lines.forEach(l=>{
+      if(!l) return;
+      let [id,time,status]=l.split('|');
+      let dt = new Date(time*1000).toLocaleString();
+      html+=`<tr><td>${id}</td><td>${dt}</td><td>${status}</td>
         <td>
-          <button onclick="set('${acc}','GO')"   ${status==='GO'?'class="stop"':''}>开</button>
-          <button onclick="set('${acc}','STOP')" ${status==='STOP'?'class="stop"':''}>停</button>
-        </td>
-      </tr>`;
+          <button onclick="set('${id}','GO')" ${status==='GO'?'class="stop"':''}>开</button>
+          <button onclick="set('${id}','STOP')" ${status==='STOP'?'class="stop"':''}>停</button>
+        </td></tr>`;
     });
-    document.getElementById('list').innerHTML = html || '<tr><td colspan="3">暂无账户</td></tr>';
+    document.getElementById('list').innerHTML=html||'<tr><td colspan="4">暂无用户</td></tr>';
   });
 }
-function set(acc, cmd){
-  fetch(`eatest/${acc}.txt`).then(()=>load());
-  // 实际控制由 EA 读取 control/xxx.txt 文件
+function set(id,cmd){
+  fetch(`eatest/${id}.txt`).then(r=>r.text()).then(()=>{/* 触发更新 */});
+  load();
 }
-setInterval(load, 5000); load();
+setInterval(load,8000); load();
 </script>
-</body>
-</html>
-
+</body></html>
