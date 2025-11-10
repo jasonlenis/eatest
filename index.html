@@ -36,10 +36,11 @@ function load(){
   });
 }
 function set(acc, cmd){
-  fetch(`control/${acc}.txt`).then(()=>load());
+  fetch(`eatest/${acc}.txt`).then(()=>load());
   // 实际控制由 EA 读取 control/xxx.txt 文件
 }
 setInterval(load, 5000); load();
 </script>
 </body>
 </html>
+
