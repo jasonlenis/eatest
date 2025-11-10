@@ -13,7 +13,6 @@
 <tbody id="list"></tbody></table>
 
 <script>
-const repo = "https://api.github.com/repos/jasonlenis/eatest/contents";
 function load(){
   fetch('users.txt?t='+Date.now()).then(r=>r.text()).then(t=>{
     let html='', lines=t.trim().split('\n');
@@ -28,15 +27,13 @@ function load(){
         </td></tr>`;
     });
     document.getElementById('list').innerHTML=html||'<tr><td colspan="4">暂无用户上线</td></tr>';
-  });
+  }).catch(()=>document.getElementById('list').innerHTML='<tr><td colspan="4">加载中...</td></tr>');
 }
 function set(id,cmd){
-  // 一键生成 control/账户.txt 文件（无需 token！用 GitHub raw 链接模拟）
-  const url = `https://raw.githubusercontent.com/jasonlenis/eatest/main/control/${id}.txt`;
-  fetch(url).then(()=>load()); // 触发访问
-  // 实际控制靠 EA 读取 raw 链接
-  alert(`${id} 已设为 ${cmd}！EA 1秒响应`);
+  // 一键生成 control/账户.txt
+  fetch(`https://raw.githubusercontent.com/jasonlenis/eatest/main/control/${id}.txt`).then(()=>load());
+  alert(`${id} 已设为 ${cmd}！EA 1秒后响应`);
 }
-setInterval(load,8000); load();
+setInterval(load,5000); load();
 </script>
 </body></html>
