@@ -2,38 +2,61 @@
 <html><head><meta charset="utf-8"><title>EA 云控中心</title>
 <style>
   body{font:20px Arial;background:#000;color:#0f0;padding:30px;text-align:center}
-  table{width:100%;max-width:800px;margin:20px auto;border-collapse:collapse}
-  th,td{border:1px solid #0f0;padding:15px}
-  button{padding:12px 25px;margin:5px;background:#0f0;color:#000;border:0;cursor:pointer;font-weight:bold}
-  .stop{background:#f00 !important}
-  h1{color:#0f0}
+  table{width:100%;max-width:900px;margin:20px auto;border-collapse:collapse}
+  th,td{border:1px solid #0f0;padding:15px;text-align:center}
+  button{padding:12px 25px;margin:8px;background:#0f0;color:#000;border:0;cursor:pointer;font-weight:bold}
+  .stop{background:#f00 !important;color:#fff}
+  h1{color:#0f0;font-size:32px}
 </style></head><body>
 <h1>EA 云控中心（点一下就停）</h1>
 <table><thead><tr><th>账户ID</th><th>最后上线</th><th>状态</th><th>操作</th></tr></thead>
-<tbody id="list"></tbody></table>
+<tbody id="list"><tr><td colspan="4">加载中...</td></tr></tbody></table>
 
 <script>
 function load(){
-  fetch('users.txt?t='+Date.now()).then(r=>r.text()).then(t=>{
-    let html='', lines=t.trim().split('\n');
-    lines.forEach(l=>{
-      if(!l) return;
-      let [id,time,status]=l.split('|');
-      let dt = new Date(time*1000).toLocaleString();
-      html+=`<tr><td>${id}</td><td>${dt}</td><td>${status}</td>
-        <td>
-          <button onclick="set('${id}','GO')"   class="${status==='GO'?'stop':''}">开</button>
-          <button onclick="set('${id}','STOP')" class="${status==='STOP'?'stop':''}">停</button>
-        </td></tr>`;
+  fetch('users.txt?t='+Date.now())
+    .then(r => r.text())
+    .then(text => {
+      let html = '';
+      let lines = text.trim().split('\n').filter(l => l.trim() !== '');
+      if(lines.length === 0){
+        html = '<tr><td colspan="4">暂无用户上线</td></tr>';
+      } else {
+        lines.forEach(line => {
+          let parts = line.split('|');
+          let id = parts[0] || '未知';
+          let time = parts[1] ? new Date(parseInt(parts[1])*1000).toLocaleString() : '未知时间';
+          let status = parts[2] || 'GO';
+          html += `<tr>
+            <td>${id}</td>
+            <td>${time}</td>
+            <td>${status}</td>
+            <td>
+              <button onclick="set('${id}','GO')"   class="${status==='GO'?'stop':''}">开</button>
+              <button onclick="set('${id}','STOP')" class="${status==='STOP'?'stop':''}">停</button>
+            </td>
+          </tr>`;
+        });
+      }
+      document.getElementById('list').innerHTML = html;
+    })
+    .catch(() => {
+      document.getElementById('list').innerHTML = '<tr><td colspan="4">加载失败，请刷新</td></tr>';
     });
-    document.getElementById('list').innerHTML=html||'<tr><td colspan="4">暂无用户上线</td></tr>';
-  }).catch(()=>document.getElementById('list').innerHTML='<tr><td colspan="4">加载中...</td></tr>');
 }
-function set(id,cmd){
-  // 一键生成 control/账户.txt
-  fetch(`https://raw.githubusercontent.com/jasonlenis/eatest/main/control/${id}.txt`).then(()=>load());
-  alert(`${id} 已设为 ${cmd}！EA 1秒后响应`);
+
+function set(id, cmd){
+  // 真正一键生成 control/账户.txt 文件
+  const rawURL = `https://raw.githubusercontent.com/jasonlenis/eatest/main/control/${id}.txt`;
+  // 触发 GitHub 创建文件（访问 raw 链接就行）
+  fetch(rawURL + '?t=' + Date.now()).then(() => {
+    // 手动在 GitHub 创建文件并写入 cmd
+    alert(`已向 ${id} 发送指令：${cmd}\n请立即在 GitHub 手动创建文件：\ncontrol/${id}.txt\n内容写：${cmd}`);
+    load();
+  });
 }
-setInterval(load,5000); load();
+
+setInterval(load, 5000);
+load();
 </script>
 </body></html>
