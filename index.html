@@ -7,34 +7,44 @@
   button{padding:12px 30px;margin:5px;background:#0f0;color:#000;border:0;cursor:pointer;font-weight:bold}
   .stop{background:#f00 !important;color:#fff}
 </style></head><body>
-<h1>EA云控中心（点一下就停）</h1>
+<h1>EA云控中心（点一下就自动生成文件）</h1>
 <table><thead><tr><th>账户ID</th><th>最后上线</th><th>状态</th><th>操作</th></tr></thead>
 <tbody id="list">加载中...</tbody></table>
 
 <script>
-function load(){
-  fetch('https://cdn.jsdelivr.net/gh/jasonlenis/eatest/users.txt?t='+Date.now())
-    .then(r=>r.text()).then(t=>{
-      let html='', lines=t.trim().split('\n');
-      lines.forEach(l=>{
-        if(!l) return;
-        let [id,time,status]=l.split('|');
-        let dt = new Date(parseInt(time)*1000).toLocaleString();
-        html+=`<tr><td>${id}</td><td>${dt}</td><td>${status}</td>
-          <td>
-            <button onclick="set('${id}','GO')"   class="${status==='GO'?'stop':''}">开</button>
-            <button onclick="set('${id}','STOP')" class="${status==='STOP'?'stop':''}">停</button>
-          </td></tr>`;
-      });
-      document.getElementById('list').innerHTML=html||'<tr><td colspan="4">暂无用户</td></tr>';
-    });
+const TOKEN = "ghp_你的PersonalAccessToken"; // ← 30秒生成，见下面
+const REPO = "jasonlenis/eatest";
+
+async function load(){
+  const t = await fetch('https://cdn.jsdelivr.net/gh/'+REPO+'/users.txt').then(r=>r.text());
+  let html='', lines=t.trim().split('\n');
+  lines.forEach(l=>{ if(!l) return;
+    let [id,time,status]=l.split('|');
+    let dt = new Date(parseInt(time)*1000).toLocaleString();
+    html+=`<tr><td>${id}</td><td>${dt}</td><td>${status}</td>
+      <td>
+        <button onclick="set('${id}','GO')"   class="${status==='GO'?'stop':''}">开</button>
+        <button onclick="set('${id}','STOP')" class="${status==='STOP'?'stop':''}">停</button>
+      </td></tr>`;
+  });
+  document.getElementById('list').innerHTML=html||'<tr><td colspan="4">暂无用户</td></tr>';
 }
-function set(id,cmd){
-  // 用jsDelivr强制刷新缓存 + 触发GitHub创建文件
-  fetch(`https://cdn.jsdelivr.net/gh/jasonlenis/eatest/control/${id}.txt`);
-  alert(`${id} 已设为 ${cmd}！\n请立即在GitHub创建文件：control/${id}.txt\n内容写：${cmd}`);
-  load();
+
+async function set(id,cmd){
+  await fetch(`https://api.github.com/repos/${REPO}/dispatches`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'token '+TOKEN,
+      'Accept': 'application/vnd.github.v3+json'
+    },
+    body: JSON.stringify({
+      event_type: "update_command",
+      client_payload: { id: id, cmd: cmd, time: Date.now() }
+    })
+  });
+  alert(`${id} 已自动设为 ${cmd}！文件30秒内生成`);
+  setTimeout(load, 10000);
 }
-setInterval(load,5000); load();
+setInterval(load,8000); load();
 </script>
 </body></html>
