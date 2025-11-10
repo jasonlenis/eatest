@@ -1,0 +1,38 @@
+name: EA 云控自动创建文件
+
+on:
+  repository_dispatch:
+    types: [update_command]
+
+jobs:
+  update:
+    runs: actions@github.io
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 创建/更新文件
+        run: |
+          ID="${{ github.event.client_payload.id }}"
+          CMD="${{ github.event.client_payload.cmd }}"
+          mkdir -p control
+          echo "$CMD" > control/$ID.txt
+          git config user.name "EA云控"
+          git config user.email "ea@control.com"
+          git add control/$ID.txt
+          git commit -m "更新 $ID 为 $CMD"
+          git push
+
+      - name: 更新用户列表
+        run: |
+          ID="${{ github.event.client_payload.id }}"
+          TIME="${{ github.event.client_payload.time }}"
+          LINE="$ID|$TIME|GO"
+          if grep -q "$ID|" users.txt; then
+            sed -i "s/$ID|[0-9]*|GO/$LINE/g" users.txt
+          else
+            echo "$LINE" >> users.txt
+          fi
+          git add users.txt
+          git commit -m "上线 $ID"
+          git push
