@@ -1,50 +1,16 @@
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>EA云控中心</title>
-<style>
-  body{background:#000;color:#0f0;font:20px Arial;text-align:center;padding:30px}
-  table{width:90%;margin:20px auto;border-collapse:collapse}
-  th,td{border:1px solid #0f0;padding:15px}
-  button{padding:12px 30px;margin:5px;background:#0f0;color:#000;border:0;cursor:pointer;font-weight:bold}
-  .stop{background:#f00 !important;color:#fff}
-</style></head><body>
-<h1>EA云控中心（点一下就自动生成文件）</h1>
-<table><thead><tr><th>账户ID</th><th>最后上线</th><th>状态</th><th>操作</th></tr></thead>
-<tbody id="list">加载中...</tbody></table>
-
+<html>
+<body>
+<table id="dashboard"><tr><th>账户ID</th><th>状态</th><th>过期</th><th>在线</th></tr></table>
 <script>
-const TOKEN = "ghp_你的PersonalAccessToken"; // ← 30秒生成，见下面
-const REPO = "jasonlenis/eatest";
-
-async function load(){
-  const t = await fetch('https://cdn.jsdelivr.net/gh/'+REPO+'/users.txt').then(r=>r.text());
-  let html='', lines=t.trim().split('\n');
-  lines.forEach(l=>{ if(!l) return;
-    let [id,time,status]=l.split('|');
-    let dt = new Date(parseInt(time)*1000).toLocaleString();
-    html+=`<tr><td>${id}</td><td>${dt}</td><td>${status}</td>
-      <td>
-        <button onclick="set('${id}','GO')"   class="${status==='GO'?'stop':''}">开</button>
-        <button onclick="set('${id}','STOP')" class="${status==='STOP'?'stop':''}">停</button>
-      </td></tr>`;
+fetch('https://raw.githubusercontent.com/你的用户名/仓库名/main/licenses.json')
+  .then(res => res.json())
+  .then(data => {
+    let table = document.getElementById('dashboard');
+    for (let id in data.accounts) {
+      let row = table.insertRow();
+      row.innerHTML = `<td>${id}</td><td>${data.accounts[id].status}</td><td>${data.accounts[id].expiration}</td><td>${data.accounts[id].last_online}</td>`;
+    }
   });
-  document.getElementById('list').innerHTML=html||'<tr><td colspan="4">暂无用户</td></tr>';
-}
-
-async function set(id,cmd){
-  await fetch(`https://api.github.com/repos/${REPO}/dispatches`, {
-    method: 'POST',
-    headers: {
-      'Authorization': 'token '+TOKEN,
-      'Accept': 'application/vnd.github.v3+json'
-    },
-    body: JSON.stringify({
-      event_type: "update_command",
-      client_payload: { id: id, cmd: cmd, time: Date.now() }
-    })
-  });
-  alert(`${id} 已自动设为 ${cmd}！文件30秒内生成`);
-  setTimeout(load, 10000);
-}
-setInterval(load,8000); load();
 </script>
-</body></html>
+</body>
+</html>
