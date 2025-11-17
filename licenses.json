@@ -1,6 +1,5 @@
 {
   "accounts": {
-    "277075584": {"status": "active", "expiration": "2026-12-31", "last_online": "2025-11-17"},
-    "789101": {"status": "disabled", "expiration": "2025-11-30", "last_online": "2025-11-16"}
+    "277075584": {"status": "active", "expiration": "2026-12-31", "last_online": "2025-11-17"}
   }
 }
