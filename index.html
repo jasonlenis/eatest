@@ -2,7 +2,7 @@
 <body>
 <table id="dashboard"><tr><th>账户ID</th><th>状态</th><th>过期</th><th>在线</th></tr></table>
 <script>
-fetch('https://raw.githubusercontent.com/你的用户名/仓库名/main/licenses.json')
+fetch('https://raw.githubusercontent.com/jasonlenis/eatest/main/licenses.json')
   .then(res => res.json())
   .then(data => {
     let table = document.getElementById('dashboard');
@@ -24,3 +24,4 @@ fetch('https://raw.githubusercontent.com/你的用户名/仓库名/main/licenses
 </script>
 </body>
 </html>
+
