@@ -6,10 +6,20 @@ fetch('https://raw.githubusercontent.com/你的用户名/仓库名/main/licenses
   .then(res => res.json())
   .then(data => {
     let table = document.getElementById('dashboard');
-    for (let id in data.accounts) {
+    if (!data || !data.accounts) {
       let row = table.insertRow();
-      row.innerHTML = `<td>${id}</td><td>${data.accounts[id].status}</td><td>${data.accounts[id].expiration}</td><td>${data.accounts[id].last_online}</td>`;
+      row.innerHTML = '<td colspan="4">No data available</td>';  // 新增：空数据提示
+      return;
     }
+    for (let id in data.accounts) {
+      let acc = data.accounts[id];
+      let row = table.insertRow();
+      row.innerHTML = `<td>${id}</td><td>${acc.status}</td><td>${acc.expiration}</td><td>${acc.last_online || '未知'}</td>`;
+    }
+  })
+  .catch(err => {
+    console.error('Fetch error:', err);  // 日志错误
+    document.getElementById('dashboard').innerHTML = '<tr><td colspan="4">Error loading data</td></tr>';
   });
 </script>
 </body>
